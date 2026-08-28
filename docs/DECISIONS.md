@@ -188,6 +188,36 @@ against the primary source before this project is presented publicly.
 
 ---
 
+**Stage:** S4
+**Decision:** Documented, not "fixed" — the raw citywide shadow union area does not
+grow toward the ends of the day; only the *sidewalk-restricted* shaded area does
+**Deviation:** None in the code — a finding about CLAUDE.md §5's own stated S4 accept
+criterion ("shadow area grows toward the ends of the day"), which does not hold as
+literally written under CLAUDE.md's own shadow model.
+**Rationale:** Measured directly: the unrestricted union of all ~62k shadow circles
+is ~1.73–1.75M m² at 08:00, 13:00, and 18:00 alike (<1% variation) — because CLAUDE.md
+§5's shadow model gives every crown's shadow **the same radius as the crown itself**,
+regardless of solar altitude; only the *offset distance* from the trunk grows at low
+sun. Real elongated shadows would grow at low sun angles; fixed-size translated
+circles don't. What *does* vary strongly with time of day is the shaded area that
+actually lands on the narrow sidewalk strip near each tree's trunk: 237,626 m² at
+08:00 → 722,316 m² at 13:00 → 218,946 m² at 18:00. At low sun the large offset
+usually carries the shadow off the sidewalk and onto the roadway (outside the
+analysis units entirely); near solar noon the small offset keeps it near the trunk,
+which is where the sidewalk is. This is the metric `s4_shadows.ipynb` actually
+reports and checks.
+**Impact:** No code change — this is exactly the metric that matters for the
+project's actual question (shade a pedestrian experiences on the sidewalk), and it
+peaks in the middle of the day as intuition would suggest, just via a different
+mechanism than "shadows get longer." `docs/METHODOLOGY.md`'s shadow-projection
+section is updated to describe both behaviors so a reader doesn't mistake the
+citywide-union pattern for a bug. Noted as a candidate v2 refinement: model shadows
+as offset ellipses (stretching at low altitude) rather than same-size circles, which
+would make the raw union area itself grow at day's edges as most readers intuitively
+expect.
+
+---
+
 This file tracks all tech and methodology choices that diverge from the specification or that required trade-offs. As each stage completes, note:
 
 1. **Stage:** e.g. "S1"

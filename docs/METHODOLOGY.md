@@ -125,11 +125,29 @@ where $h$ is `crown_centre_height_m` and $\alpha$ is solar altitude (radians). T
 
 ### Spot-check validation
 
-After S4, visual checks:
-1. **Morning shadows (08:00–10:00)** should point **west** (away from rising sun)
-2. **Afternoon shadows (16:00–18:00)** should point **east** (away from setting sun)
-3. **Shadow area** should peak near solar noon (12:00–13:00)
-4. At minimum altitude filter, shadow should disappear gracefully
+After S4, checks performed in `src/s4_shadows.ipynb`:
+1. **Morning shadows (≤10:00)** shift **west** (negative x offset, away from the
+   rising sun in the east) — confirmed on the 2025-07-15 reference day.
+2. **Afternoon shadows (≥16:00)** shift **east** (positive x offset) — confirmed.
+3. **No empty shadow union at midday** — confirmed (17,970–17,989 shaded units at
+   11:00–13:00).
+4. **Sidewalk-restricted shaded area peaks near solar noon**, not the raw citywide
+   union — see note below. Measured: 237,626 m² (08:00) → 722,316 m² (13:00) →
+   218,946 m² (18:00).
+
+**Note on "shadow area" and the fixed-radius-circle model:** because every crown's
+shadow is modeled as a circle of the *same radius as the crown* (§ above) — only its
+*offset distance* from the trunk grows at low solar altitude, not its size — the raw,
+unrestricted union of all ~62k shadow circles across Manhattan barely changes across
+the day (measured: 1.727–1.746M m², <1% variation between 08:00, 13:00, and 18:00).
+What actually drives the strong midday peak in *useful* shaded area is that a large
+low-sun offset usually carries the shadow off the narrow sidewalk strip and onto the
+roadway (outside the analysis units), while the small near-noon offset keeps it near
+the trunk, which is where the sidewalk is. A real elongated shadow would grow at low
+sun angles; a same-size translated circle doesn't. See `docs/DECISIONS.md` (S4).
+**v2 candidate:** model shadows as offset ellipses that stretch at low altitude,
+which would make the citywide union area itself grow at the day's edges, matching
+naive intuition as well as the restricted metric already does.
 
 ---
 

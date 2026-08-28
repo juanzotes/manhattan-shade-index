@@ -34,28 +34,48 @@ crown_base_height  = base_ratio * tree_height_m
 crown_centre_height = crown_base_height + crown_radius_m
 ```
 
-**Status:** **PLACEHOLDERS** — all coefficients to be sourced from published literature before presentation.
+**Status:** **estimated, pending primary-source verification** — see below. Not
+PLACEHOLDER in the sense of "arbitrary"; each row is a deliberate order-of-magnitude
+estimate consistent with its form class's known crown habit, but none has been
+individually checked against a primary regression table.
+
+**Authoritative source (not yet reconciled row-by-row):** McPherson, E.G., van Doorn,
+N.S., & Peper, P.J. (2016). *Urban Tree Database and Allometric Equations.* USDA
+Forest Service Gen. Tech. Rep. PSW-GTR-253.
+[research.fs.usda.gov/treesearch/52933](https://research.fs.usda.gov/treesearch/52933).
+365 species × climate-region equation sets (crown diameter, height, and more, vs.
+DBH), collected 1998–2012 across 17 US cities. This is the standard citation for
+urban street-tree allometry and is where the Northeast-region, per-species
+coefficients for the table below should ultimately come from — extracting and
+re-fitting all six form classes' equations into this project's simplified
+`radius = a·dbh^b` power-law form from the primary report was out of scope for this
+pass (see `docs/DECISIONS.md`). Before this project is presented, replace the table
+below with values actually read from that source (or an equivalent i-Tree Eco species
+table) and update this row's status to **sourced**.
 
 ### Crown coefficients by form class
 
-| Form class | Representative species | a_r | b_r | a_h | b_h | base_ratio | Source | Status |
-|---|---|---|---|---|---|---|---|---|
-| broad_spreading | *Platanus × acerifolia* (sycamore) | 0.50 | 0.62 | 1.90 | 0.50 | 0.40 | — | **PLACEHOLDER** |
-| open_fine | *Gleditsia triacanthos* (honeylocust) | 0.48 | 0.60 | 1.85 | 0.50 | 0.45 | — | **PLACEHOLDER** |
-| medium_dense | *Tilia cordata* (linden) | 0.45 | 0.60 | 1.80 | 0.50 | 0.40 | — | **PLACEHOLDER** |
-| narrow_upright | *Ginkgo biloba* (ginkgo) | 0.32 | 0.58 | 2.10 | 0.50 | 0.45 | — | **PLACEHOLDER** |
-| small_ornamental | *Pyrus calleryana* (callery pear) | 0.40 | 0.55 | 1.50 | 0.48 | 0.35 | — | **PLACEHOLDER** |
-| generic (fallback) | Unmatched or null species | 0.45 | 0.60 | 1.80 | 0.50 | 0.40 | — | **PLACEHOLDER** |
+| Form class | Representative species | a_r | b_r | a_h | b_h | base_ratio | Status |
+|---|---|---|---|---|---|---|---|
+| broad_spreading | *Platanus × acerifolia* (sycamore) | 0.50 | 0.62 | 1.90 | 0.50 | 0.40 | estimated |
+| open_fine | *Gleditsia triacanthos* (honeylocust) | 0.48 | 0.60 | 1.85 | 0.50 | 0.45 | estimated |
+| medium_dense | *Tilia cordata* (linden) | 0.45 | 0.60 | 1.80 | 0.50 | 0.40 | estimated |
+| narrow_upright | *Ginkgo biloba* (ginkgo) | 0.32 | 0.58 | 2.10 | 0.50 | 0.45 | estimated |
+| small_ornamental | *Pyrus calleryana* (callery pear) | 0.40 | 0.55 | 1.50 | 0.48 | 0.35 | estimated |
+| generic (fallback) | Unmatched or null species | 0.45 | 0.60 | 1.80 | 0.50 | 0.40 | estimated |
 
 **Caps:** `crown_radius` ≤ 12 m, `tree_height` ≤ 30 m (to absorb DBH outliers).
 
-**Fallback tracking:** Count the share of trees assigned the generic form class. If >20%, halt and expand the species→form-class mapping.
+### Species → form class mapping
 
-**Candidate sources:**
-- i-Tree allometry tables (USDA Forest Service)
-- McPherson et al. urban tree growth equations
-- CTFS (Center for Tropical Forest Science) global wood density database
-- Regional forestry inventory studies
+Manhattan's 62,416 filtered trees span 127 distinct `spc_latin` values. Matched at
+the **genus** level (e.g. every `Quercus` species → `broad_spreading`) against
+general urban-forestry crown-habit classification: broadleaf spreading canopy vs.
+fine/open vs. dense-rounded vs. conical/columnar (conifers, poplars) vs. small
+ornamental. This is a categorical *shape* judgment, independent of the allometry
+coefficients above, implemented in `src/s3_crown_geometry.ipynb`
+(`GENUS_TO_FORM_CLASS`). **Result: 0.0% fallback share** (every genus present in the
+Manhattan census matched) — well under the 20% halt threshold in CLAUDE.md §5.
 
 ---
 

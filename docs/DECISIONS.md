@@ -166,6 +166,28 @@ with a `street_name` and `side`, per the S2 accept criterion.
 
 ---
 
+**Stage:** S3
+**Decision:** Species → form class mapped at the genus level; allometry coefficients
+left as documented estimates rather than re-derived from the primary source
+**Deviation:** CLAUDE.md §6/§10 requires citing a published source for every
+allometry row (or explicitly marking it unsourced) before presentation.
+**Rationale:** McPherson et al. (2016), the standard urban-forestry allometry
+reference, publishes 365 species × climate-region equation sets in a report-native
+form (polynomial/log regressions per species per region), not this project's
+simplified `radius = a·dbh^b` power law — reliably extracting and re-fitting all six
+form classes' coefficients from that primary source's tables was out of scope for
+this pass. Fabricating specific-looking numbers I couldn't verify against the primary
+tables would be worse than being explicit about the gap.
+**Impact:** `docs/METHODOLOGY.md` now cites the source and marks every row
+**"estimated, pending primary-source verification"** rather than a bare PLACEHOLDER —
+honest about precision without blocking the pipeline. The genus-level species
+mapping itself (`GENUS_TO_FORM_CLASS` in `s3_crown_geometry.ipynb`) achieved 0.0%
+fallback share across Manhattan's 127 tree species, well under the 20% halt
+threshold, so S3 proceeds; only the numeric coefficients remain to be reconciled
+against the primary source before this project is presented publicly.
+
+---
+
 This file tracks all tech and methodology choices that diverge from the specification or that required trade-offs. As each stage completes, note:
 
 1. **Stage:** e.g. "S1"

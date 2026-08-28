@@ -154,26 +154,41 @@ imagery before this project is presented** — that step is not done.
 
 ## S6 — Web Map and Tiles
 
-**Status:** Pending (not yet run)
+**Status:** ✅ Complete (local); GitHub Pages deployment pending user go-ahead
 
-- [ ] PMTiles file created and valid (`file size > 100 KB`)
-- [ ] GeoJSON export produced; valid GeoJSON, all features have properties
-- [ ] Web map loads from file path or local server
-- [ ] Hour slider present and functional (drag or input)
-- [ ] Clicking a unit shows street name, side, shade hours, tree count
-- [ ] Shade index legend present with sequential color ramp
-- [ ] Page load time < 3 s
-- [ ] Building shadow caveat visible on map (methodology panel)
-- [ ] GitHub Pages deployment successful (if applicable)
+- [x] PMTiles file created and valid: `pmtiles show` confirms spec v3, MVT tiles,
+      bounds matching Manhattan, zoom 10–16, 387 tiles, gzip compressed
+- [x] GeoJSON export produced: 78.2 MB, 34,603 features, all with the full
+      property set (`street_name`, `side`, `shade_index`, `peak_heat_index`, 11
+      hourly `shade_fraction_HHMM` columns, `tree_count_nearby`)
+- [x] Web map loads from a local range-capable server (WSL `RangeHTTPServer`) —
+      verified with a headless-Chromium (Playwright) session, not just by eye:
+      PMTiles range requests return HTTP 206, `map.isSourceLoaded()` is true,
+      7,980+ features render at borough zoom
+- [x] Hour slider present and functional: dragging from 12:00 → 08:00 visibly
+      changes the shaded extent of West 81st Street (screenshotted)
+- [x] Clicking a unit opens the info panel with real values (tested on West 81
+      Street: Side: Left, Shade index: 0.46, Peak heat index: 0.63, Trees nearby: 9)
+- [x] Shade index legend present with sequential white→blue ramp
+- [x] Building-shadow caveat panel visible at all times (not just on load)
+- [ ] GitHub Pages deployment — not done yet; needs explicit go-ahead before
+      creating a public remote (see `docs/DECISIONS.md`)
 
-**Map QA:**
+**Visual note (not a bug):** at a borough-wide zoom, the fill layer is barely
+visible — sidewalk units are thin ribbons (median ~150 m²) and most have low
+shade_index (pale color on a pale basemap). Zoomed to street level (~z16-18) on
+West 81st Street, the #1-ranked block, the dark-blue shaded ribbon is clearly
+visible and its shape visibly shifts between 08:00 and 12:00, confirming the
+whole pipeline end-to-end — data → tiles → render — is working correctly.
+
+**Map QA (actual):**
 ```
-Web map load time: —
-Tile file size: — MB
-Feature count in GeoJSON: —
-PM Tiles zoom levels: —
+Web map load time: <3s locally (WSL RangeHTTPServer, localhost)
+Tile file size: 16.9 MB (well under the 50 MB target / 100 MB GitHub limit)
+Feature count in GeoJSON: 34,603
+PMTiles zoom levels: 10-16
 ```
 
 ---
 
-*Last updated: after S5 (shade index).*
+*Last updated: after S6 (tiles and web map, local verification).*

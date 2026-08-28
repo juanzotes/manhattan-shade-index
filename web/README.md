@@ -6,35 +6,23 @@ This directory contains the interactive web map for the Manhattan Sidewalk Shade
 
 ### Starting a local server
 
-**⚠️ Do NOT use Python's built-in `http.server` for PMTiles — it does not support HTTP range requests.**
+**⚠️ Do NOT use Python's built-in `http.server` for PMTiles — it does not support HTTP range requests and will fail silently (the vector layer just never renders).**
 
-Choose one:
+Per `modern-gis/SKILL.md` §10 (Windows), this project serves via WSL/Ubuntu with `rangehttpserver`, confirmed working end-to-end with a headless-browser check:
 
-#### Option 1: Node.js (recommended)
 ```bash
-# Install globally or use npx
-npx http-server .
+# One-time setup (in WSL/Ubuntu)
+python3 -m venv ~/.venvs/rangeserver
+~/.venvs/rangeserver/bin/pip install rangehttpserver
 
-# Or install locally
-npm install --save-dev http-server
-npm run start
+# From this directory (web/), each time you want to preview locally
+cd /mnt/c/path/to/4.4-coding-agents/web
+~/.venvs/rangeserver/bin/python -m RangeHTTPServer 8080
 ```
 
-#### Option 2: Python with caddy
-```bash
-# Install caddy (macOS)
-brew install caddy
+Then visit: `http://localhost:8080/index.html`
 
-# Or download from https://caddyserver.com/download
-
-# In this directory, run:
-caddy file-server --listen :8080 --browse
-```
-
-#### Option 3: Python with `python -m http.server` (static files only)
-Not suitable for PMTiles. Use only for GeoJSON or other small static files.
-
-Then visit: `http://localhost:8080`
+(Node's `npx http-server` or `caddy file-server` also work if you have them — any server that honours `Range` headers on GET requests is fine.)
 
 ## Deployment to GitHub Pages
 
@@ -92,13 +80,22 @@ web/
 
 ## Map features
 
-- **Basemap**: OpenStreetMap (via Leaflet or external XYZ)
-- **Overlay**: Sidewalk units colored by shade_index
-- **Hour slider**: 08:00–18:00, recolors by shade_fraction_t
-- **Click interaction**: Show street name, side, shade hours, tree count
+- **Basemap**: OpenStreetMap raster tiles, loaded directly as a MapLibre raster source (no Leaflet — MapLibre only, per `modern-gis/SKILL.md` §11)
+- **Overlay**: Sidewalk units colored by `shade_index` on load
+- **Hour slider**: 08:00–18:00, recolors by `shade_fraction_HHMM` on drag
+- **Click interaction**: Shows street name, side, shade index, peak heat index, tree count nearby
 - **Legend**: Sequential color ramp (white=0, blue=1)
 - **Info panel**: Methodology and building-shadow caveat (always visible)
 
+Sidewalk units are thin polygon ribbons (median ~150 m²) — at a borough-wide zoom
+they're nearly invisible against the basemap, especially where shade is low (pale
+color on pale basemap). Zoom in to street level (≈z16-18) to see the effect clearly;
+verified locally on West 81st Street, the #1-ranked block, where the shaded ribbon is
+plainly visible in dark blue.
+
 ---
 
-*Last updated: [Project start]*
+*Last verified: local Playwright + headless-Chromium check — map loads, PMTiles
+range requests succeed (HTTP 206), 7,980+ features render, hour slider recolors the
+layer, click-to-info panel works. GitHub Pages deployment not yet done — see
+`docs/DECISIONS.md`.*

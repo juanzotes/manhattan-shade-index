@@ -6,6 +6,7 @@
     <title>Manhattan Sidewalk Shade Index</title>
     <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.0.0/dist/maplibre-gl.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.0.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/pmtiles@3.0.6/dist/pmtiles.js"></script>
     <style>
         * {
             margin: 0;
@@ -187,13 +188,14 @@
         </div>
 
         <p style="font-size: 11px; color: #999; margin-top: 12px;">
-            Drag the slider to see how tree shade changes throughout the day (08:00–18:00).
+            Drag the slider to see how tree shade changes throughout the day (08:00–18:00),
+            reference day 2025-07-15.
         </p>
     </div>
 
     <!-- Legend -->
     <div class="legend">
-        <h3>Shade Index</h3>
+        <h3>Shade fraction (selected hour)</h3>
         <div class="legend-item">
             <div class="legend-color" style="background: #f7fbff;"></div>
             <span>0 (no shade)</span>
@@ -225,10 +227,11 @@
         </p>
         <p>
             A north–south avenue between tall towers is deeply shaded at 09:00 regardless of trees.
-            This analysis answers: <em>"where does the urban forest do the work?"</em> — an interesting and honest question.
+            This analysis answers: <em>"where does the urban forest do the work?"</em> — an interesting and honest question,
+            not "where is it shadiest."
         </p>
         <p>
-            <a href="https://github.com/..." target="_blank" style="color: #0066cc;">Read the full methodology.</a>
+            <a href="../CLAUDE.md" target="_blank" style="color: #0066cc;">Read the full methodology.</a>
         </p>
     </div>
 
@@ -237,53 +240,124 @@
         <span class="close-btn" id="close-btn">×</span>
         <h3 id="feature-title">Street Name</h3>
         <p><strong>Side:</strong> <span id="feature-side">—</span></p>
-        <p><strong>Shade index:</strong> <span id="feature-index">—</span></p>
+        <p><strong>Shade index (all day):</strong> <span id="feature-index">—</span></p>
         <p><strong>Peak heat index (11–16:00):</strong> <span id="feature-peak">—</span></p>
         <p><strong>Trees nearby:</strong> <span id="feature-trees">—</span></p>
     </div>
 
     <script>
-        // Create map
+        const protocol = new pmtiles.Protocol();
+        maplibregl.addProtocol("pmtiles", protocol.tile);
+
+        const SOURCE_LAYER = "shade_index";
+        const TILES_URL = "pmtiles://tiles/shade_index.pmtiles";
+
+        // Sequential shade-fraction color ramp (0 -> white, 1 -> dark blue)
+        function shadeColorExpression(property) {
+            return [
+                "interpolate", ["linear"], ["coalesce", ["get", property], 0],
+                0, "#f7fbff",
+                0.25, "#deebf7",
+                0.5, "#9ecae1",
+                0.75, "#3182bd",
+                1, "#08519c"
+            ];
+        }
+
         const map = new maplibregl.Map({
-            container: 'map',
-            style: 'https://tile.openstreetmap.org/style.json', // Or use a real basemap
+            container: "map",
+            style: {
+                version: 8,
+                sources: {
+                    osm: {
+                        type: "raster",
+                        tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+                        tileSize: 256,
+                        attribution: "© OpenStreetMap contributors"
+                    }
+                },
+                layers: [{ id: "osm", type: "raster", source: "osm" }]
+            },
             center: [-73.9712, 40.7831],  // Manhattan centroid
             zoom: 13,
             pitch: 0,
             bearing: 0
         });
+        window.map = map;  // exposed for debugging in the console
+
+        map.on("error", (e) => console.error("MapLibre error:", e.error));
+
+        map.on("load", () => {
+            map.addSource("shade-units", {
+                type: "vector",
+                url: TILES_URL
+            });
+
+            map.addLayer({
+                id: "shade-fill",
+                type: "fill",
+                source: "shade-units",
+                "source-layer": SOURCE_LAYER,
+                paint: {
+                    "fill-color": shadeColorExpression("shade_index"),
+                    "fill-opacity": 0.85
+                }
+            });
+
+            map.addLayer({
+                id: "shade-outline",
+                type: "line",
+                source: "shade-units",
+                "source-layer": SOURCE_LAYER,
+                paint: {
+                    "line-color": "#666",
+                    "line-width": 0.4,
+                    "line-opacity": 0.5
+                }
+            });
+
+            // Start the slider at 12:00 to match the initial fill-color property
+            updateMapLayer(12);
+        });
 
         // Hour slider
-        const hourSlider = document.getElementById('hour-slider');
-        const hourDisplay = document.getElementById('hour-display');
+        const hourSlider = document.getElementById("hour-slider");
+        const hourDisplay = document.getElementById("hour-display");
 
-        hourSlider.addEventListener('change', (e) => {
+        hourSlider.addEventListener("input", (e) => {
             const hour = parseInt(e.target.value);
-            hourDisplay.textContent = `${hour.toString().padStart(2, '0')}:00`;
+            hourDisplay.textContent = `${hour.toString().padStart(2, "0")}:00`;
             updateMapLayer(hour);
         });
 
         function updateMapLayer(hour) {
-            // TODO: Recolor map layer based on shade_fraction_{hour}
-            console.log(`Update map for hour ${hour}:00`);
+            const label = `${hour.toString().padStart(2, "0")}00`;
+            if (!map.getLayer("shade-fill")) return;
+            map.setPaintProperty("shade-fill", "fill-color", shadeColorExpression(`shade_fraction_${label}`));
         }
 
         // Feature click handler
-        map.on('click', (e) => {
-            // TODO: Query feature at click location from tiles
-            // Show feature info panel
-            console.log('Clicked on map', e);
+        map.on("click", "shade-fill", (e) => {
+            if (!e.features.length) return;
+            const props = e.features[0].properties;
+
+            document.getElementById("feature-title").textContent = props.street_name || "Unnamed street";
+            document.getElementById("feature-side").textContent = props.side ?? "—";
+            document.getElementById("feature-index").textContent =
+                props.shade_index != null ? Number(props.shade_index).toFixed(2) : "—";
+            document.getElementById("feature-peak").textContent =
+                props.peak_heat_index != null ? Number(props.peak_heat_index).toFixed(2) : "—";
+            document.getElementById("feature-trees").textContent = props.tree_count_nearby ?? "—";
+
+            document.getElementById("feature-info").classList.add("active");
         });
+
+        map.on("mouseenter", "shade-fill", () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", "shade-fill", () => { map.getCanvas().style.cursor = ""; });
 
         // Close feature info
-        document.getElementById('close-btn').addEventListener('click', () => {
-            document.getElementById('feature-info').classList.remove('active');
-        });
-
-        // Placeholder: Add layers when map is ready
-        map.on('load', () => {
-            console.log('Map loaded. TODO: Load PMTiles layer.');
-            // TODO: Add source and layers from tiles/shade_index.pmtiles
+        document.getElementById("close-btn").addEventListener("click", () => {
+            document.getElementById("feature-info").classList.remove("active");
         });
     </script>
 </body>

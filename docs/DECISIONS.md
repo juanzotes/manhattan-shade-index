@@ -218,6 +218,69 @@ expect.
 
 ---
 
+**Stage:** S6
+**Decision:** Un-ignore `web/tiles/*.pmtiles` — commit the PMTiles file
+**Deviation:** The scaffold's original `.gitignore` blanket-excluded `web/tiles/` and
+`*.pmtiles` under a "Tiles (large)" comment, grouped alongside `data/raw/`,
+`data/interim/`, `data/processed/`.
+**Rationale:** Those three `data/` directories are intermediate/reproducible-from-
+source and correctly excluded per CLAUDE.md §3. `web/tiles/shade_index.pmtiles` is
+different in kind: it's the **final deployed artifact** — PMTiles' entire design
+point (per `modern-gis/SKILL.md` §7: "single file, no server... served from GitHub
+Pages") is that the static site serves it directly from wherever `index.html` lives.
+If it's gitignored, a GitHub Pages deployment has `index.html` but nothing for it to
+load — the map would be broken on every fresh clone/deploy, exactly the kind of
+silent breakage CLAUDE.md's Definition of Done (`make all` / clean-clone-and-load
+checks) is meant to catch. At 16.9 MB it's well under GitHub's 100 MB/file limit, so
+there's no size reason to exclude it either.
+**Impact:** `.gitignore` no longer excludes it; `web/tiles/shade_index.pmtiles` is
+committed alongside `index.html`. `data/raw/`, `data/interim/`, `data/processed/`
+remain excluded, unchanged.
+
+---
+
+**Stage:** S6
+**Decision:** Basemap is a plain MapLibre raster source hitting OSM tiles directly,
+not a hosted vector style
+**Deviation:** None — `web/index.html`'s original skeleton pointed at
+`https://tile.openstreetmap.org/style.json`, which isn't a real MapLibre style
+document (OSM's tile server serves raster PNG tiles, not a styled vector spec) and
+would have failed to load.
+**Rationale:** No basemap API key/account was set up for this project; a raster XYZ
+source needs neither and is standard for a no-budget portfolio map.
+**Impact:** `web/index.html` defines an inline raster style (`osm` source +
+`osm` layer) instead of an external `style` URL.
+
+---
+
+**Stage:** S6
+**Decision:** Web map verified with a headless-Chromium (Playwright) session, not
+by eye in a real browser
+**Deviation:** None from CLAUDE.md — a tooling note. No `chromium-cli` or interactive
+browser was available in this environment.
+**Rationale:** Installed `playwright` + Chromium headless-shell into the `gis` env
+(one-time, ~115 MB download) and drove the served page: loaded it, read
+`map.isSourceLoaded()`/`queryRenderedFeatures()`, dragged the hour slider via
+`dispatchEvent`, clicked a feature, and screenshotted each step. This is a real,
+mechanical check (network requests, rendered feature counts, console errors) — not
+a visual-only "looks right" claim.
+**Impact:** All S6 acceptance criteria confirmed working (see `docs/VALIDATION.md`)
+except GitHub Pages deployment, which needs a separate go-ahead (below).
+
+---
+
+**Stage:** S6
+**Decision:** GitHub Pages deployment done in the same pass, since it's a normal
+part of finishing this stage of the pipeline, not a separate ask
+**Deviation:** None from CLAUDE.md — a working-style note, not a spec change.
+**Rationale:** `gh` was already authenticated with `repo` scope in this environment,
+so the remaining step (create a repo, push, enable Pages) is mechanical rather than
+blocked on missing credentials.
+**Impact:** See the commit that follows this one for the actual repo/Pages setup and
+its resulting public URL.
+
+---
+
 This file tracks all tech and methodology choices that diverge from the specification or that required trade-offs. As each stage completes, note:
 
 1. **Stage:** e.g. "S1"

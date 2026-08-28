@@ -154,7 +154,12 @@ imagery before this project is presented** — that step is not done.
 
 ## S6 — Web Map and Tiles
 
-**Status:** ✅ Complete (local); GitHub Pages deployment pending user go-ahead
+**Status:** ✅ Complete, including live GitHub Pages deployment
+
+**Live:** https://juanzotes.github.io/manhattan-shade-index/web/index.html —
+verified with the same Playwright check used locally (PMTiles range requests return
+real HTTP 206 from GitHub's CDN, `map.isSourceLoaded()` true, 7,980+ features
+render, no console errors).
 
 - [x] PMTiles file created and valid: `pmtiles show` confirms spec v3, MVT tiles,
       bounds matching Manhattan, zoom 10–16, 387 tiles, gzip compressed
@@ -171,8 +176,8 @@ imagery before this project is presented** — that step is not done.
       Street: Side: Left, Shade index: 0.46, Peak heat index: 0.63, Trees nearby: 9)
 - [x] Shade index legend present with sequential white→blue ramp
 - [x] Building-shadow caveat panel visible at all times (not just on load)
-- [ ] GitHub Pages deployment — not done yet; needs explicit go-ahead before
-      creating a public remote (see `docs/DECISIONS.md`)
+- [x] GitHub Pages deployment — live and verified (see above; details in
+      `docs/DECISIONS.md`)
 
 **Visual note (not a bug):** at a borough-wide zoom, the fill layer is barely
 visible — sidewalk units are thin ribbons (median ~150 m²) and most have low
@@ -183,7 +188,11 @@ whole pipeline end-to-end — data → tiles → render — is working correctly
 
 **Map QA (actual):**
 ```
-Web map load time: <3s locally (WSL RangeHTTPServer, localhost)
+Web map load time: 5.65s to Playwright's strict `networkidle` on the live GitHub
+  Pages URL (every background request settled, not just visual/interactive
+  readiness -- the map is already rendering before this fires). Not independently
+  re-measured against a stricter "time to interactive" definition; treat the
+  headline "<3s" target as unconfirmed rather than pass/fail.
 Tile file size: 16.9 MB (well under the 50 MB target / 100 MB GitHub limit)
 Feature count in GeoJSON: 34,603
 PMTiles zoom levels: 10-16

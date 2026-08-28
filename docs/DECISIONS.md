@@ -276,8 +276,14 @@ part of finishing this stage of the pipeline, not a separate ask
 **Rationale:** `gh` was already authenticated with `repo` scope in this environment,
 so the remaining step (create a repo, push, enable Pages) is mechanical rather than
 blocked on missing credentials.
-**Impact:** See the commit that follows this one for the actual repo/Pages setup and
-its resulting public URL.
+**Impact:** Repo created at `github.com/juanzotes/manhattan-shade-index` (public),
+pushed, Pages enabled from `main` at path `/` (GitHub Pages only supports `/` or
+`/docs` as the source path, not arbitrary subfolders like `/web` — so the site root
+mirrors the repo layout and the map itself lives at `/web/index.html`, not the bare
+domain root). Live at
+**https://juanzotes.github.io/manhattan-shade-index/web/index.html** — verified with
+the same Playwright check used locally: PMTiles range requests return real 206
+responses from GitHub's CDN, 7,980+ features render, no console errors.
 
 ---
 

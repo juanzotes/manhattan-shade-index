@@ -4,6 +4,8 @@
 
 **Answer:** A reproducible analysis pipeline that ranks Manhattan sidewalk segments by tree-shade coverage over an 11-hour summer day (08:00–18:00).
 
+**Live map:** [juanzotes.github.io/manhattan-shade-index/web/index.html](https://juanzotes.github.io/manhattan-shade-index/web/index.html)
+
 ## What this project does
 
 1. Downloads street tree and sidewalk data from NYC Open Data.

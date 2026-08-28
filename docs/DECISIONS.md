@@ -136,6 +136,36 @@ ingestion" rule for legacy formats. `Street` is the name column; `LBoro`/`RBoro`
 
 ---
 
+**Stage:** S2
+**Decision:** Synthetic sequential `unit_id`, not the raw dataset's `source_id`
+**Deviation:** None from CLAUDE.md — `source_id` turned out not to be a real key.
+**Rationale:** `source_id` is not unique in the raw sidewalk dataset (559 of 4,584
+rows share `source_id='0'`); using it as a join/partition key silently drops rows.
+Caught by testing the nearest-LION join before relying on it (compared row counts
+before writing the real notebook).
+**Impact:** `s2_analysis_units.ipynb` assigns `unit_id` via `row_number()` after
+explode and, again, after grid subdivision — matches CLAUDE.md §5's "generate a
+stable unit_id" step exactly, just via a different source field than the raw data's
+own (unreliable) id.
+
+---
+
+**Stage:** S2
+**Decision:** Nearest-LION join uses a 150 m centroid buffer + `FeatureTyp IN ('0','1')`
+filter, with a fallback pass (all LION types, unbounded) for stragglers
+**Deviation:** None from CLAUDE.md — an efficiency/correctness detail, not a spec change.
+**Rationale:** A true unbounded nearest join (34,603 units × 30,126 filtered LION
+segments) took 27s in testing; a 150 m buffer pre-filter cut that to ~6s and, at
+full scale, resolved 34,599 of 34,603 units. Filtering LION to `FeatureTyp IN
+('0','1')` (Street / Non-Addressable Street) avoids matching sidewalks to census
+boundaries, piers, and waterway lines also present in the LION layer. The 4
+stragglers (slivers near park/waterfront edges with no coded street within 150 m)
+get a second, unbounded pass against every LION type so every unit still ends up
+with a `street_name` and `side`, per the S2 accept criterion.
+**Impact:** None on output schema or acceptance criteria — 100% of units resolved.
+
+---
+
 This file tracks all tech and methodology choices that diverge from the specification or that required trade-offs. As each stage completes, note:
 
 1. **Stage:** e.g. "S1"

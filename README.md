@@ -56,11 +56,31 @@ Each stage is idempotent and produces its own QA summary. See [CLAUDE.md](CLAUDE
 
 ## Top 20 shadiest Manhattan sidewalks by peak-heat index (11:00–16:00)
 
-*To be populated after S5 completes.*
+From the 2025-07-15 reference day run (`data/processed/top20_shadiest.csv`). Note the
+tree-only caveat above: this ranks *tree canopy* shade, not total shade.
 
 | Rank | Street | Side | Peak Heat Index | Shade Hours |
 |------|--------|------|---|---|
-| 1 | — | — | — | — |
+| 1 | West 81 Street | Left | 0.968 | 6.94 |
+| 2 | West 81 Street | Left | 0.957 | 7.31 |
+| 3 | East 13 Street | Left | 0.955 | 5.25 |
+| 4 | East 97 Street | Right | 0.947 | 6.64 |
+| 5 | East 57 Street | Left | 0.946 | 6.18 |
+| 6 | East 57 Street | Left | 0.943 | 5.66 |
+| 7 | Delancey Street | Right | 0.903 | 7.14 |
+| 8 | East 85 Street | Right | 0.903 | 5.14 |
+| 9 | West 77 Street | Right | 0.901 | 6.04 |
+| 10 | 5 Avenue | Left | 0.901 | 4.69 |
+| 11 | 5 Avenue | Left | 0.897 | 4.79 |
+| 12 | Delancey Street | Right | 0.891 | 7.14 |
+| 13 | East 71 Street | Left | 0.883 | 5.57 |
+| 14 | West 73 Street | Right | 0.881 | 5.08 |
+| 15 | East 91 Street | Left | 0.877 | 5.49 |
+| 16 | East 78 Street | Left | 0.877 | 6.08 |
+| 17 | East 97 Street | Right | 0.876 | 6.27 |
+| 18 | West 89 Street | Right | 0.871 | 6.30 |
+| 19 | West 88 Street | Right | 0.869 | 5.87 |
+| 20 | East 13 Street | Left | 0.867 | 6.12 |
 
 ## Documentation
 

@@ -1,0 +1,52 @@
+# Conda environments
+.venv/
+env/
+envs/
+venv/
+
+# Raw data (downloads)
+data/raw/
+
+# Intermediate processing
+data/interim/
+
+# Processed data
+data/processed/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tiles (large)
+web/tiles/
+*.pmtiles
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Local config overrides
+config.local.yaml
+
+# Cache
+.cache/
+*.cache

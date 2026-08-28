@@ -1,0 +1,123 @@
+# Configuration for Manhattan Sidewalk Shade Index pipeline
+
+# === Reference date and time window ===
+reference_date: "2025-07-15"
+timezone: "America/New_York"
+start_hour: 8
+end_hour: 18
+step_hours: 1  # hourly timesteps
+
+# === Geospatial configuration ===
+analysis_crs: "EPSG:32618"  # UTM 18N, metres
+output_crs: "EPSG:4326"     # WGS84 for web
+manhattan_borocode: 1
+
+# === Data sources ===
+# These will be resolved in S0 and written to data/SOURCES.md
+data_sources:
+  street_trees_primary: "NYC 2015 Street Tree Census (Tree Data)"
+  street_trees_alt: "NYC Forestry Tree Points"
+  sidewalks: "NYC Planimetric Database - Sidewalk"
+  street_centerlines: "NYC DCP LION"
+  borough_boundary: "NYC Borough Boundaries"
+
+# === Tree filtering and processing ===
+tree_status_filter: "Alive"
+tree_min_dbh_cm: 0  # Drop trees with DBH <= 0
+tree_dbh_input_unit: "inches"  # Source provides DBH in inches, convert to cm
+
+# === Sidewalk analysis units ===
+max_unit_area_m2: 250  # Decision gate for subdivision
+grid_size_m: 50  # Grid cell size for subdividing large sidewalk polygons
+
+# === Crown geometry ===
+crown_radius_cap_m: 12
+tree_height_cap_m: 30
+crown_opacity: 1.0  # v1: opaque. v2: per-species transmittance
+
+# Allometry table (form class -> coefficients)
+# All values are PLACEHOLDERS; replace with published sources before presentation
+allometry:
+  broad_spreading:
+    representative_species: "Platanus × acerifolia, Quercus palustris"
+    a_r: 0.50
+    b_r: 0.62
+    a_h: 1.90
+    b_h: 0.50
+    base_ratio: 0.40
+    opacity: 1.0
+  
+  open_fine:
+    representative_species: "Gleditsia triacanthos"
+    a_r: 0.48
+    b_r: 0.60
+    a_h: 1.85
+    b_h: 0.50
+    base_ratio: 0.45
+    opacity: 1.0
+  
+  medium_dense:
+    representative_species: "Tilia cordata, Zelkova serrata"
+    a_r: 0.45
+    b_r: 0.60
+    a_h: 1.80
+    b_h: 0.50
+    base_ratio: 0.40
+    opacity: 1.0
+  
+  narrow_upright:
+    representative_species: "Ginkgo biloba"
+    a_r: 0.32
+    b_r: 0.58
+    a_h: 2.10
+    b_h: 0.50
+    base_ratio: 0.45
+    opacity: 1.0
+  
+  small_ornamental:
+    representative_species: "Pyrus calleryana, Prunus spp."
+    a_r: 0.40
+    b_r: 0.55
+    a_h: 1.50
+    b_h: 0.48
+    base_ratio: 0.35
+    opacity: 1.0
+  
+  generic:
+    representative_species: "fallback"
+    a_r: 0.45
+    b_r: 0.60
+    a_h: 1.80
+    b_h: 0.50
+    base_ratio: 0.40
+    opacity: 1.0
+
+# === Shadow projection ===
+min_altitude_deg: 5.0  # Skip shadows when sun is too low (grazing)
+
+# === Shade index ===
+peak_heat_window_start_hour: 11
+peak_heat_window_end_hour: 16
+
+# === Paths ===
+data_dir: "data"
+raw_dir: "data/raw"
+interim_dir: "data/interim"
+processed_dir: "data/processed"
+src_dir: "src"
+docs_dir: "docs"
+notebooks_dir: "notebooks"
+web_dir: "web"
+
+# === Output files (relative to project root) ===
+output:
+  sources_manifest: "data/SOURCES.md"
+  ingested_trees: "data/interim/trees.parquet"
+  ingested_sidewalks: "data/interim/sidewalks.parquet"
+  ingested_lion: "data/interim/lion.parquet"
+  analysis_units: "data/interim/analysis_units.parquet"
+  units_with_crowns: "data/interim/units_with_crowns.parquet"
+  shadows_by_hour: "data/interim/shadows_{hour:02d}00.parquet"
+  shade_index_units: "data/processed/shade_index_units.parquet"
+  shade_index_geojson: "data/processed/shade_index_units.geojson"
+  shade_pmtiles: "web/tiles/shade_index.pmtiles"

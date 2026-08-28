@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manhattan Sidewalk Shade Index</title>
+    <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.0.0/dist/maplibre-gl.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.0.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+            padding: 16px;
+            max-width: 320px;
+        }
+
+        .controls h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .controls p {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .hour-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .hour-control input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .hour-display {
+            font-weight: 600;
+            color: #333;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+            padding: 12px;
+            font-size: 12px;
+        }
+
+        .legend h3 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 2px;
+        }
+
+        .info-panel {
+            position: absolute;
+            top: 380px;
+            left: 20px;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+            padding: 16px;
+            max-width: 320px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .info-panel h3 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .info-panel p {
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .feature-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+            padding: 16px;
+            max-width: 300px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .feature-info.active {
+            display: block;
+        }
+
+        .feature-info h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .feature-info p {
+            color: #666;
+            margin: 4px 0;
+        }
+
+        .close-btn {
+            float: right;
+            cursor: pointer;
+            font-size: 16px;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <!-- Controls Panel -->
+    <div class="controls">
+        <h2>Shade Index</h2>
+        <p>Which side of which street should I walk on to stay in the shade?</p>
+
+        <div class="hour-control">
+            <label for="hour-slider">Hour:</label>
+            <input type="range" id="hour-slider" min="8" max="18" value="12" step="1">
+            <div class="hour-display" id="hour-display">12:00</div>
+        </div>
+
+        <p style="font-size: 11px; color: #999; margin-top: 12px;">
+            Drag the slider to see how tree shade changes throughout the day (08:00–18:00).
+        </p>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+        <h3>Shade Index</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #f7fbff;"></div>
+            <span>0 (no shade)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #deebf7;"></div>
+            <span>0.25</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #9ecae1;"></div>
+            <span>0.50</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #3182bd;"></div>
+            <span>0.75</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #08519c;"></div>
+            <span>1.0 (fully shaded)</span>
+        </div>
+    </div>
+
+    <!-- Info Panel (Methodology) -->
+    <div class="info-panel">
+        <h3>⚠️ Important caveat</h3>
+        <p>
+            <strong>Tree shade only.</strong> This map shows the shade cast by street trees, not total shade.
+            In Manhattan, <strong>building shadows dominate.</strong>
+        </p>
+        <p>
+            A north–south avenue between tall towers is deeply shaded at 09:00 regardless of trees.
+            This analysis answers: <em>"where does the urban forest do the work?"</em> — an interesting and honest question.
+        </p>
+        <p>
+            <a href="https://github.com/..." target="_blank" style="color: #0066cc;">Read the full methodology.</a>
+        </p>
+    </div>
+
+    <!-- Feature Info (shown on click) -->
+    <div class="feature-info" id="feature-info">
+        <span class="close-btn" id="close-btn">×</span>
+        <h3 id="feature-title">Street Name</h3>
+        <p><strong>Side:</strong> <span id="feature-side">—</span></p>
+        <p><strong>Shade index:</strong> <span id="feature-index">—</span></p>
+        <p><strong>Peak heat index (11–16:00):</strong> <span id="feature-peak">—</span></p>
+        <p><strong>Trees nearby:</strong> <span id="feature-trees">—</span></p>
+    </div>
+
+    <script>
+        // Create map
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://tile.openstreetmap.org/style.json', // Or use a real basemap
+            center: [-73.9712, 40.7831],  // Manhattan centroid
+            zoom: 13,
+            pitch: 0,
+            bearing: 0
+        });
+
+        // Hour slider
+        const hourSlider = document.getElementById('hour-slider');
+        const hourDisplay = document.getElementById('hour-display');
+
+        hourSlider.addEventListener('change', (e) => {
+            const hour = parseInt(e.target.value);
+            hourDisplay.textContent = `${hour.toString().padStart(2, '0')}:00`;
+            updateMapLayer(hour);
+        });
+
+        function updateMapLayer(hour) {
+            // TODO: Recolor map layer based on shade_fraction_{hour}
+            console.log(`Update map for hour ${hour}:00`);
+        }
+
+        // Feature click handler
+        map.on('click', (e) => {
+            // TODO: Query feature at click location from tiles
+            // Show feature info panel
+            console.log('Clicked on map', e);
+        });
+
+        // Close feature info
+        document.getElementById('close-btn').addEventListener('click', () => {
+            document.getElementById('feature-info').classList.remove('active');
+        });
+
+        // Placeholder: Add layers when map is ready
+        map.on('load', () => {
+            console.log('Map loaded. TODO: Load PMTiles layer.');
+            // TODO: Add source and layers from tiles/shade_index.pmtiles
+        });
+    </script>
+</body>
+</html>

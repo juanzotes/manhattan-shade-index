@@ -103,6 +103,39 @@ analysis-unit overlay + aggregation, are SQL queries against the GeoParquet outp
 via DuckDB, not `geopandas.sjoin`/`groupby` calls. Output schemas and acceptance
 criteria are unaffected — same GeoParquet layers with the same required columns.
 
+**Stage:** S1
+**Decision:** Build tree point geometry from `latitude`/`longitude` columns instead of
+using the Socrata `.geojson` export's geometry
+**Deviation:** None from CLAUDE.md/SKILL.md — a live-data quirk, not a methodology
+choice.
+**Rationale:** The 2015 Street Tree Census dataset's `.geojson` export returns
+`"geometry": null` on every feature — `latitude`/`longitude` are plain number columns
+on this dataset, not a Socrata Point-typed column, so the automatic GeoJSON geometry
+serialization has nothing to attach. Downloading `.json` instead and building points
+via `geopandas.points_from_xy(longitude, latitude)` (EPSG:4326) works correctly.
+**Impact:** `s1_ingest.ipynb` downloads trees as `.json`, not `.geojson`; every other
+tabular source (sidewalks, borough boundary) uses `.geojson` normally since their
+geometry columns serialize correctly.
+
+---
+
+**Stage:** S1
+**Decision:** LION is an Esri File Geodatabase inside the zip, not a shapefile
+**Deviation:** CLAUDE.md §4 lists LION under "Shapefile" expectations implicitly (via
+the general shapefile-ingestion convention in `modern-gis/SKILL.md` §5); the actual
+blob is a `.gdb` directory (layers: `lion`, `node`, `node_stname`, `altnames`), native
+CRS EPSG:2263.
+**Rationale:** Discovered by extracting the real downloaded blob — not something to
+guess in advance.
+**Impact:** `s1_ingest.ipynb` reads the `lion` layer directly via
+`geopandas.read_file(gdb_path, layer="lion")` (fiona's OpenFileGDB driver) rather than
+globbing for `.shp`. It's converted to GeoParquet immediately after reprojection, so
+downstream stages never touch the `.gdb` — satisfies SKILL.md §5's "never past
+ingestion" rule for legacy formats. `Street` is the name column; `LBoro`/`RBoro`
+(left/right-side borough) will help S2's side-of-street assignment.
+
+---
+
 This file tracks all tech and methodology choices that diverge from the specification or that required trade-offs. As each stage completes, note:
 
 1. **Stage:** e.g. "S1"

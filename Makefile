@@ -1,6 +1,6 @@
 .PHONY: all clean env s0 s1 s2 s3 s4 s5 s6 help
 
-NBCONVERT = jupyter nbconvert --to notebook --execute --inplace
+NBCONVERT = python src/_run_notebook.py
 
 help:
 	@echo "Manhattan Sidewalk Shade Index — pipeline targets"
@@ -19,7 +19,7 @@ help:
 	@echo "  all            Run all stages s0–s6 from raw"
 	@echo "  clean          Remove all intermediate and processed data"
 	@echo ""
-	@echo "Stages are Jupyter notebooks, executed headlessly in-place via nbconvert."
+	@echo "Stages are Jupyter notebooks, executed headlessly in-place (src/_run_notebook.py)."
 	@echo "Activate the shared 'gis' conda environment before running any target."
 
 env:

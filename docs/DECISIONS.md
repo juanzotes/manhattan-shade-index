@@ -11,9 +11,50 @@
 **Rationale:** User-requested for readability — markdown cells carry the methodology
 narrative alongside the code, rather than splitting it into docstrings/comments.
 **Impact:** Each notebook is still standalone and idempotent. `make sN` / `make all`
-invoke `jupyter nbconvert --to notebook --execute --inplace src/sN_*.ipynb` instead of
-`python src/sN_*.py` — automation and rerun-from-raw behaviour is unchanged, only the
-file format and invocation command differ.
+invoke a headless notebook runner instead of `python src/sN_*.py` — automation and
+rerun-from-raw behaviour is unchanged, only the file format and invocation command
+differ. (See the next entry for exactly which runner and why.)
+
+---
+
+**Stage:** Setup
+**Decision:** Headless notebook execution uses `src/_run_notebook.py` (nbclient
+directly), not the `jupyter nbconvert` CLI
+**Deviation:** None from CLAUDE.md/SKILL.md — this is a local tooling workaround, not
+a methodology or tech-stack choice.
+**Rationale:** `jupyter nbconvert --execute` unconditionally imports nbconvert's
+`ServePostProcessor`, which imports `tornado`, which calls
+`ssl.create_default_context().load_default_certs()` at import time — and on this
+machine that trips `ssl.SSLError: [ASN1: NOT_ENOUGH_DATA]` reading a malformed entry
+in the Windows certificate store, unrelated to anything this project does. `nbclient`
+(already a `gis` dependency) executes and saves a notebook in place without that
+import chain.
+**Impact:** `Makefile` targets and this project's docs call
+`python src/_run_notebook.py src/sN_*.ipynb` rather than
+`jupyter nbconvert --to notebook --execute --inplace`. Behaviour is identical
+(run every cell, save the result back to the same file); only the invocation differs.
+
+---
+
+**Stage:** S0
+**Decision:** Resolve all five CLAUDE.md §3 sources through the Socrata catalog API,
+including sidewalks and LION
+**Deviation:** CLAUDE.md §3 states sidewalks and LION "ship via DCP 'Bytes of the Big
+Apple', not Socrata." Live investigation found both *are* also registered on NYC Open
+Data (Socrata) — this is the §11 case of "a data reality contradicts this file."
+**Rationale:** The DCP nyc.gov distribution pages (`dwn-lion.page` etc.) turned out to
+be JS-rendered shells — a plain HTTP fetch returns ~7.5 KB of template markup with no
+dataset links in it, so the DCP-page resolution path in the spec cannot work as
+described regardless of which exact URL is used. The Socrata catalog API is directly
+queryable and returns real datasets for both.
+**Impact:** S0 resolves all five sources with one function, handling three asset
+shapes Socrata returns: **tabular** (query directly), **map** (a visualization
+wrapper — "Sidewalk"'s top catalog hit — whose `modifyingViewUid` points at the real
+backing tabular dataset, `52n9-sdep`), and **blobby** (a downloadable file; LION
+resolves to `2v4z-66xt`, a zipped shapefile with no queryable columns). S1 must
+therefore download-and-unzip LION rather than query it as GeoJSON, and convert it to
+GeoParquet immediately per `modern-gis/SKILL.md` §5 ("Shapefile: Legacy ingestion
+only").
 
 ---
 

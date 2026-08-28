@@ -96,7 +96,7 @@ make s0
 or
 
 ```bash
-jupyter nbconvert --to notebook --execute --inplace src/s0_resolve_sources.ipynb
+python src/_run_notebook.py src/s0_resolve_sources.ipynb
 ```
 
 **What S0 does:**
@@ -172,7 +172,7 @@ Each stage:
 You don't need to run all stages in order. To test a single stage:
 
 ```bash
-jupyter nbconvert --to notebook --execute --inplace src/s2_analysis_units.ipynb
+python src/_run_notebook.py src/s2_analysis_units.ipynb
 ```
 
 Each script is standalone and idempotent (running it again produces the same output).
@@ -196,7 +196,7 @@ Make sure the conda environment is activated:
 
 ```bash
 conda activate gis
-jupyter nbconvert --to notebook --execute --inplace src/s1_ingest.ipynb
+python src/_run_notebook.py src/s1_ingest.ipynb
 ```
 
 ### GeoParquet not readable

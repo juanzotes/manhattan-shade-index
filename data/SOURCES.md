@@ -98,3 +98,42 @@ jupyter nbconvert --to notebook --execute --inplace src/s0_resolve_sources.ipynb
 ```
 
 Raw files go to `data/raw/`. **Do not commit.** See `.gitignore`.
+
+## Resolution Results
+
+**Resolved:** 2026-08-28T13:24:38.385171
+
+### street_trees_primary
+**Status:** success
+**Dataset ID:** uvpi-gqnh
+**Asset kind:** tabular
+**URL:** https://data.cityofnewyork.us/resource/uvpi-gqnh.geojson
+**Columns:** tree_id, block_id, created_at, tree_dbh, stump_diam, curb_loc, status, health, spc_latin, spc_common, steward, guards, sidewalk, user_type, problems, root_stone, root_grate, root_other, trunk_wire, trnk_light, trnk_other, brch_light, brch_shoe, brch_other, address, postcode, zip_city, community board, borocode, borough, cncldist, st_assem, st_senate, nta, nta_name, boro_ct, state, latitude, longitude, x_sp, y_sp, council district, census tract, bin, bbl
+
+### street_trees_alt
+**Status:** success
+**Dataset ID:** hn5i-inap
+**Asset kind:** tabular
+**URL:** https://data.cityofnewyork.us/resource/hn5i-inap.geojson
+**Columns:** OBJECTID, DBH, TPStructure, TPCondition, StumpDiameter, PlantingSpaceGlobalID, Geometry, GlobalID, GenusSpecies, CreatedDate, UpdatedDate, PlantedDate, RiskRating, RiskRatingDate, Location, Zip Codes 2, Community Districts 2, Borough Boundaries 2, City Council Districts 2, Police Precincts 2
+
+### borough_boundary
+**Status:** success
+**Dataset ID:** gthc-hcne
+**Asset kind:** tabular
+**URL:** https://data.cityofnewyork.us/resource/gthc-hcne.geojson
+**Columns:** BoroCode, BoroName, Shape_Area, Shape_Length, the_geom
+
+### sidewalks
+**Status:** success
+**Dataset ID:** 52n9-sdep
+**Asset kind:** tabular
+**URL:** https://data.cityofnewyork.us/resource/52n9-sdep.geojson
+**Columns:** the_geom, SOURCE_ID, SUB_CODE, FEAT_CODE, STATUS, SHAPE_Leng, SHAPE_Area
+
+### street_centerlines
+**Status:** success
+**Dataset ID:** 2v4z-66xt
+**Asset kind:** blob
+**URL:** https://data.cityofnewyork.us/api/views/2v4z-66xt/files/30298730-5064-447c-8c39-a3981409d9b3?download=true&filename=nyclion.zip
+**Message:** Blob file asset (nyclion.zip, 45,981,902 bytes) -- not a queryable table, no columns to verify.
